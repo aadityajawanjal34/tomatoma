@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:geocoding/geocoding.dart';
+
+void main() {
+  runApp(FarmerAccountDetailsPage());
+}
 
 class FarmerAccountDetailsPage extends StatefulWidget {
   const FarmerAccountDetailsPage({Key? key}) : super(key: key);
@@ -102,11 +107,25 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
     );
   }
 
-  void _saveDetails() {
+  void _saveDetails() async {
     String name = nameController.text;
     String contact = contactController.text;
 
-    // Perform validation if necessary
+    // Validate input fields
+    if (name.isEmpty || contact.isEmpty || latitude == null || longitude == null) {
+      _showValidationDialog('Please fill in all the details.');
+      return;
+    }
+
+    // Reverse geocode the selected location to get the address
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(latitude!, longitude!);
+      if (placemarks.isNotEmpty) {
+        sublocality = placemarks[0].subLocality ?? placemarks[0].locality;
+      }
+    } catch (e) {
+      print('Error getting address: $e');
+    }
 
     // Save details to database or perform any other action
     print('Name: $name');
@@ -114,6 +133,32 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
     print('Latitude: $latitude');
     print('Longitude: $longitude');
     print('Sublocality: $sublocality');
+
+    // Navigate to FarmerHomePage
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => FarmerHomePage()),
+    );
+  }
+
+  void _showValidationDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Validation Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -203,3 +248,19 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
   }
 }
 
+class FarmerHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Farmer Home Page'),
+      ),
+      body: Center(
+        child: Text(
+          'Welcome to Farmer Home Page!',
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
