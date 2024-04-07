@@ -1,41 +1,56 @@
-//Now let's create the article model
-// for that we just need to copy the property from the json structure
-// and make a dart object
-
 import 'source_model.dart';
 
 class Article {
   Source source;
-  String author;
-  String title;
-  String description;
-  String url;
-  String urlToImage;
-  String publishedAt;
-  String content;
+  String ? author;
+  String ? title;
+  String ? description;
+  String ? url;
+  String ? urlToImage;
+  String ? publishedAt;
+  String ? content;
 
-  //Now let's create the constructor
-  Article(
-      {this.source,
-      this.author,
-      this.title,
-      this.description,
-      this.url,
-      this.urlToImage,
-      this.publishedAt,
-      this.content});
+  Article({
+    required this.source,
+    required this.author,
+    required this.title,
+    required this.description,
+    required this.url,
+    required this.urlToImage,
+    required this.publishedAt,
+    required this.content,
+  });
 
-  //And now let's create the function that will map the json into a list
   factory Article.fromJson(Map<String, dynamic> json) {
+    print('Parsing Article from JSON: $json');
+    final source = Source.fromJson(json['source'] ?? {});
+    final author = json['author'] ?? '';
+    final title = json['title'] ?? '';
+    final description = json['description'] ?? '';
+    final url = json['url'] ?? '';
+    final urlToImage = json['urlToImage'] ?? '';
+    final publishedAt = json['publishedAt'] ?? '';
+    final content = json['content'] ?? '';
+
+    print('Parsed Source: $source');
+    print('Parsed Author: $author');
+    print('Parsed Title: $title');
+    print('Parsed Description: $description');
+    print('Parsed URL: $url');
+    print('Parsed URL To Image: $urlToImage');
+    print('Parsed Published At: $publishedAt');
+    print('Parsed Content: $content');
+
     return Article(
-      source: Source.fromJson(json['source']),
-      author: json['author'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      url: json['url'] as String,
-      urlToImage: json['urlToImage'] as String,
-      publishedAt: json['publishedAt'] as String,
-      content: json['content'] as String,
+      source: source!,
+      author: author!,
+      title: title!,
+      description: description!,
+      url: url!,
+      urlToImage: urlToImage!,
+      publishedAt: publishedAt!,
+      content: content!,
     );
   }
+
 }

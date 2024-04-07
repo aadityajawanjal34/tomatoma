@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'EmailInputImage.dart';
 import 'loginPage.dart';
 import 'signupPage.dart'; // Import SignUpPage
 
@@ -31,7 +32,7 @@ class MyHomePage extends StatelessWidget {
             SizedBox(height: 20),
             OutlinedButton(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => const SignUpPage())); // Navigate to SignUpPage
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => EmailInputPage())); // Navigate to SignUpPage
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.blue, side: BorderSide(color: Colors.blue), // Border color
@@ -51,3 +52,5 @@ class MyHomePage extends StatelessWidget {
     );
   }
 }
+
+

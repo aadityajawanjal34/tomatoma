@@ -41,6 +41,8 @@ dependencies:
   geocoding: ^3.0.0
   get: ^4.6.6
   permission_handler: ^11.3.0
+  http: ^1.2.1
+  file_picker: ^8.0.0+1
 
 dev_dependencies:
   flutter_test:

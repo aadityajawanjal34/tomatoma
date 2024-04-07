@@ -4,6 +4,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geocoding/geocoding.dart';
 
+import 'FarmerHomePage.dart';
+
 void main() {
   runApp(FarmerAccountDetailsPage());
 }
@@ -248,19 +250,3 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
   }
 }
 
-class FarmerHomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Farmer Home Page'),
-      ),
-      body: Center(
-        child: Text(
-          'Welcome to Farmer Home Page!',
-          style: TextStyle(fontSize: 24),
-        ),
-      ),
-    );
-  }
-}

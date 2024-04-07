@@ -1,5 +1,5 @@
-import 'package:NewsApp/model/article_model.dart';
-import 'package:NewsApp/pages/articles_details_page.dart';
+import 'package:untitled/model/article_model.dart';
+import 'package:untitled/pages/articles_details_page.dart';
 import 'package:flutter/material.dart';
 
 Widget customListTile(Article article, BuildContext context) {
@@ -35,7 +35,7 @@ Widget customListTile(Article article, BuildContext context) {
               //let's add the height
 
               image: DecorationImage(
-                  image: NetworkImage(article.urlToImage), fit: BoxFit.cover),
+                  image: NetworkImage(article.urlToImage!), fit: BoxFit.cover),
               borderRadius: BorderRadius.circular(12.0),
             ),
           ),
@@ -59,7 +59,7 @@ Widget customListTile(Article article, BuildContext context) {
             height: 8.0,
           ),
           Text(
-            article.title,
+            article.title!,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16.0,
