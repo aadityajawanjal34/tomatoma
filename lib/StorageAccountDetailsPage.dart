@@ -1,10 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
+import 'package:untitled/StorageHomePage.dart';
 
 class StorageAccountDetailsPage extends StatefulWidget {
-  const StorageAccountDetailsPage({Key? key}) : super(key: key);
+  final String token;
+
+  const StorageAccountDetailsPage({Key? key, required this.token}) : super(key: key);
 
   @override
   _StorageAccountDetailsPageState createState() =>
@@ -20,10 +28,12 @@ class _StorageAccountDetailsPageState
   double? longitude;
   String? sublocality;
 
+  TextEditingController storageOwnerController = TextEditingController();
   TextEditingController storageNameController = TextEditingController();
-  TextEditingController ownerNameController = TextEditingController();
   TextEditingController addressController = TextEditingController();
   TextEditingController storageContactController = TextEditingController();
+  TextEditingController capacityController = TextEditingController();
+  TextEditingController rateController = TextEditingController();
 
   @override
   void initState() {
@@ -102,25 +112,118 @@ class _StorageAccountDetailsPageState
           },
         ),
       ),
-    );
+    ).then((value) async {
+      // After the modal bottom sheet is closed, fetch the address details and update the UI
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+            latitude!, longitude!);
+        if (placemarks.isNotEmpty) {
+          Placemark placemark = placemarks[0];
+          String? subLocality = placemark.subLocality ?? placemark.locality;
+          setState(() {
+            sublocality = subLocality ?? "Unknown";
+          });
+        } else {
+          setState(() {
+            sublocality = "Unknown"; // Set a default value for sublocality
+          });
+        }
+      } catch (e) {
+        print('Error getting address: $e');
+        setState(() {
+          sublocality = "Unknown"; // Handle errors by setting sublocality to "Unknown"
+        });
+      }
+    });
   }
 
-  void _saveDetails() {
+  void _saveDetails() async {
+    String storageOwner = storageOwnerController.text;
     String storageName = storageNameController.text;
-    String ownerName = ownerNameController.text;
     String address = addressController.text;
     String storageContact = storageContactController.text;
+    String capacity=capacityController.text;
+    String rate = rateController.text;
 
-    // Perform validation if necessary
+    // Validate input fields
+    if (storageOwner.isEmpty || storageName.isEmpty || capacity.isEmpty || rate.isEmpty ) {
+      _showValidationDialog('Please fill in all the details.');
+      return;
+    }
 
-    // Save details to database or perform any other action
-    print('Storage Name: $storageName');
-    print('Owner Name: $ownerName');
-    print('Address: $address');
-    print('Storage Contact: $storageContact');
-    print('Latitude: $latitude');
-    print('Longitude: $longitude');
-    print('Sublocality: $sublocality');
+    // Prepare the request body
+    Map<String, dynamic> requestBody = {
+      'token': widget.token,
+      'storage_name':"$storageName",
+      'owner_name':"$storageOwner",
+      'address': {
+        'type': 'Point',
+        'coordinates': [
+          longitude ?? 0, // Ensure to handle null values appropriately
+          latitude ?? 0,
+        ],
+        'Sublocality': sublocality ?? '', // Sublocality obtained from reverse geocoding
+      },
+      'storage_contact': "$storageContact",
+      'capacity':"$capacity",
+      'rate':"$rate",
+    };
+
+    // Send the POST request
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:4000/api/v1/auth/StorageInfo'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      );
+      print('token=${widget.token}');
+      print(jsonEncode(requestBody));
+
+      if (response.statusCode == 200) {
+        // If the server returns a 200 OK response, parse the JSON
+        Map<String, dynamic> data = jsonDecode(response.body);
+        if (data['success']) {
+          // Successfully saved farmer information
+          print(data['message']);
+          // Navigate to FarmerHomePage
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => StorageHomePage()),
+          );
+        } else {
+          // Handle server response indicating failure
+          print(data['message']);
+        }
+      } else {
+        // Handle server errors
+        print(
+            'Failed to save farmer information. Server returned status code ${response.statusCode}');
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error occurred while communicating with the server: $e');
+    }
+  }
+
+
+  void _showValidationDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Validation Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -136,24 +239,24 @@ class _StorageAccountDetailsPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
+                'Storage Owner:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextFormField(
+                controller: storageOwnerController,
+                decoration: InputDecoration(
+                  hintText: 'Enter Storage owner',
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
                 'Storage Name:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextFormField(
                 controller: storageNameController,
                 decoration: InputDecoration(
-                  hintText: 'Enter storage name',
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Owner Name:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              TextFormField(
-                controller: ownerNameController,
-                decoration: InputDecoration(
-                  hintText: 'Enter owner name',
+                  hintText: 'Enter Storage name',
                 ),
               ),
               SizedBox(height: 20),
@@ -204,7 +307,29 @@ class _StorageAccountDetailsPageState
               TextFormField(
                 controller: storageContactController,
                 decoration: InputDecoration(
-                  hintText: 'Enter storage contact number',
+                  hintText: 'Enter Storage contact number',
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Capacity:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextFormField(
+                controller: capacityController,
+                decoration: InputDecoration(
+                  hintText: 'Enter Capacity',
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Rate:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              TextFormField(
+                controller: rateController,
+                decoration: InputDecoration(
+                  hintText: 'Enter Rate',
                 ),
               ),
               SizedBox(height: 20),
@@ -220,4 +345,5 @@ class _StorageAccountDetailsPageState
       ),
     );
   }
+
 }

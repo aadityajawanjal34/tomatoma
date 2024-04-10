@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/FarmerHomePage.dart';
 
 import 'My_home_page.dart';
+import 'farmer_account_details_page.dart';
 
 
 void main() {
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MyHomePage(), // Change MyHomePage to EmailInputPage
+      home: MyHomePage(),
     );
   }
 }

@@ -1,7 +1,12 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'EmailInputImage.dart';
+import 'FarmerHomePage.dart';
+import 'NurseryHomePage.dart';
+import 'StorageHomePage.dart';
 import 'constants.dart';
 import 'signupPage.dart';
 
@@ -186,7 +191,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             TextButton(
                               onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(builder: (context) => SignUpPage()));
+                                Navigator.of(context).push(MaterialPageRoute(builder: (context) => EmailInputPage()));
                               },
                               child: Text(
                                 'Register Here',
@@ -198,54 +203,136 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(
                           height: 10,
                         ),
+
+
+                      ElevatedButton(
+                    style: ButtonStyle(
+                    elevation: MaterialStateProperty.all(0),
+              backgroundColor: MaterialStateColor.resolveWith(
+                      (states) => Colors.transparent)),
+          onPressed: () async {
+            if (_signInFormKey.currentState!.validate()) {
+              // Retrieve email and password from text controllers
+              String email = emailController.text;
+              String password = passwordController.text;
+              print(email);
+              print(password);
+
+              try {
+                // Send login request to backend server
+                var response = await http.post(
+                  Uri.parse('http://localhost:4000/api/v1/auth/login'),
+                  headers: {'Content-Type': 'application/json'},
+                  body: jsonEncode({'email': email, 'password': password}),
+
+                );
+                print(response);
+
+                // Parse response body
+                Map<String, dynamic> data = jsonDecode(response.body);
+
+                // Check if login was successful
+                if (response.statusCode == 200 && data['success']) {
+                  // Retrieve user data and token
+                  var user = data['user'];
+                  var token = data['token'];
+
+
+                  // Navigate based on account type
+                  String accountType = user['accountType'];
+                  print (accountType);
+                  switch(accountType) {
+                    case 'Farmer':
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => FarmerHomePage()),
+                      );
+                      break;
+                    case 'Nursery':
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => NurseryHomePage()),
+                      );
+                      break;
+                    case 'Storage':
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => StorageHomePage()),
+                      );
+                      break;
+                    default:
+                    // Handle unknown account type
+                      break;
+                  }
+                } else {
+                  // Handle login failure
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Login Failed'),
+                        content: Text(data['message']),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              } catch (error) {
+                // Handle network or server errors
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Error'),
+                      content: Text('An error occurred. Please try again later.'),
+                      actions: [
                         TextButton(
                           onPressed: () {
-                            // Navigator.push(
-                            //     context,
-                            //     CupertinoPageRoute(
-                            //         builder: (context) => const ResetPass()));
+                            Navigator.pop(context);
                           },
-                          child: const Text(
-                            "Forget Password ",
-                            style: TextStyle(color: Colors.blue),
-                          ),
+                          child: Text('OK'),
                         ),
-                        ElevatedButton(
-                            style: ButtonStyle(
-                                elevation: MaterialStateProperty.all(0),
-                                backgroundColor: MaterialStateColor.resolveWith(
-                                    (states) => Colors.transparent)),
-                            onPressed: () {
-                              // if (_signInFormKey.currentState!.validate()) {
-                              //   signInUser();
-                              //   // Navigator.pushReplacement((context), CupertinoPageRoute(builder: (context)=>HomePage()));
-                              // }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 30, horizontal: 50),
-                              child: Container(
-                                height: 50,
-                                width: MediaQuery.of(context).size.width / 2,
-                                decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                        colors: [Colors.redAccent, kLogTColour],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight),
-                                    //test color: Colors.redAccent,
-                                    borderRadius: BorderRadius.circular(50)),
-                                child: Center(
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
-                                      Text("SignIn"),
-                                      Icon(Icons.arrow_forward_ios)
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            )),
                       ],
+                    );
+                  },
+                );
+              }
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                vertical: 30, horizontal: 50),
+            child: Container(
+              height: 50,
+              width: MediaQuery.of(context).size.width / 2,
+              decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                      colors: [Colors.redAccent, kLogTColour],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.circular(50)),
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text("SignIn"),
+                    Icon(Icons.arrow_forward_ios)
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+
+        ],
                     ),
                   ),
                 )

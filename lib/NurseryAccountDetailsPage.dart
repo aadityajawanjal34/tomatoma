@@ -1,10 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
+import 'package:untitled/NurseryHomePage.dart';
 
 class NurseryAccountDetailsPage extends StatefulWidget {
-  const NurseryAccountDetailsPage({Key? key}) : super(key: key);
+  final String token;
+
+  const NurseryAccountDetailsPage({Key? key, required this.token}) : super(key: key);
 
   @override
   _NurseryAccountDetailsPageState createState() =>
@@ -102,25 +109,114 @@ class _NurseryAccountDetailsPageState
           },
         ),
       ),
-    );
+    ).then((value) async {
+      // After the modal bottom sheet is closed, fetch the address details and update the UI
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+            latitude!, longitude!);
+        if (placemarks.isNotEmpty) {
+          Placemark placemark = placemarks[0];
+          String? subLocality = placemark.subLocality ?? placemark.locality;
+          setState(() {
+            sublocality = subLocality ?? "Unknown";
+          });
+        } else {
+          setState(() {
+            sublocality = "Unknown"; // Set a default value for sublocality
+          });
+        }
+      } catch (e) {
+        print('Error getting address: $e');
+        setState(() {
+          sublocality = "Unknown"; // Handle errors by setting sublocality to "Unknown"
+        });
+      }
+    });
   }
 
-  void _saveDetails() {
+  void _saveDetails() async {
     String nurseryOwner = nurseryOwnerController.text;
     String nurseryName = nurseryNameController.text;
     String address = addressController.text;
     String nurseryContact = nurseryContactController.text;
 
-    // Perform validation if necessary
+    // Validate input fields
+    if (nurseryOwner.isEmpty || nurseryName.isEmpty ) {
+      _showValidationDialog('Please fill in all the details.');
+      return;
+    }
 
-    // Save details to database or perform any other action
-    print('Nursery Owner: $nurseryOwner');
-    print('Nursery Name: $nurseryName');
-    print('Address: $address');
-    print('Nursery Contact: $nurseryContact');
-    print('Latitude: $latitude');
-    print('Longitude: $longitude');
-    print('Sublocality: $sublocality');
+    // Prepare the request body
+    Map<String, dynamic> requestBody = {
+      'token': widget.token,
+      'nursery_name':"$nurseryName",
+      'nursery_owner':"$nurseryOwner",
+      'address': {
+        'type': 'Point',
+        'coordinates': [
+          longitude ?? 0, // Ensure to handle null values appropriately
+          latitude ?? 0,
+        ],
+        'Sublocality': sublocality ?? '', // Sublocality obtained from reverse geocoding
+      },
+      'nursery_contact': "$nurseryContact",
+    };
+
+    // Send the POST request
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:4000/api/v1/auth/nurseryInfo'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      );
+      print('token=${widget.token}');
+      print(jsonEncode(requestBody));
+
+      if (response.statusCode == 200) {
+        // If the server returns a 200 OK response, parse the JSON
+        Map<String, dynamic> data = jsonDecode(response.body);
+        if (data['success']) {
+          // Successfully saved farmer information
+          print(data['message']);
+          // Navigate to FarmerHomePage
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => NurseryHomePage()),
+          );
+        } else {
+          // Handle server response indicating failure
+          print(data['message']);
+        }
+      } else {
+        // Handle server errors
+        print(
+            'Failed to save farmer information. Server returned status code ${response.statusCode}');
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error occurred while communicating with the server: $e');
+    }
+  }
+
+
+  void _showValidationDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Validation Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

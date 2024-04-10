@@ -3,15 +3,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geocoding/geocoding.dart';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'FarmerHomePage.dart';
 
-void main() {
-  runApp(FarmerAccountDetailsPage());
-}
-
 class FarmerAccountDetailsPage extends StatefulWidget {
-  const FarmerAccountDetailsPage({Key? key}) : super(key: key);
+  final String token;
+
+  const FarmerAccountDetailsPage({Key? key, required this.token}) : super(key: key);
 
   @override
   _FarmerAccountDetailsPageState createState() =>
@@ -39,7 +38,8 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
     var status = await Permission.location.request();
     if (status.isGranted) {
       _getCurrentLocation();
-    } else if (status.isDenied || status.isRestricted || status.isPermanentlyDenied) {
+    } else
+    if (status.isDenied || status.isRestricted || status.isPermanentlyDenied) {
       // Handle denied permissions
       _showPermissionDeniedDialog();
     }
@@ -106,41 +106,95 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
           },
         ),
       ),
-    );
+    ).then((value) async {
+      // After the modal bottom sheet is closed, fetch the address details and update the UI
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+            latitude!, longitude!);
+        if (placemarks.isNotEmpty) {
+          Placemark placemark = placemarks[0];
+          String? subLocality = placemark.subLocality ?? placemark.locality;
+          setState(() {
+            sublocality = subLocality ?? "Unknown";
+          });
+        } else {
+          setState(() {
+            sublocality = "Unknown"; // Set a default value for sublocality
+          });
+        }
+      } catch (e) {
+        print('Error getting address: $e');
+        setState(() {
+          sublocality = "Unknown"; // Handle errors by setting sublocality to "Unknown"
+        });
+      }
+    });
   }
+
+
 
   void _saveDetails() async {
     String name = nameController.text;
     String contact = contactController.text;
 
     // Validate input fields
-    if (name.isEmpty || contact.isEmpty || latitude == null || longitude == null) {
+    if (name.isEmpty || contact.isEmpty || latitude == null ||
+        longitude == null) {
       _showValidationDialog('Please fill in all the details.');
       return;
     }
 
-    // Reverse geocode the selected location to get the address
+    // Prepare the request body
+    Map<String, dynamic> requestBody = {
+      'token': widget.token,
+      'farmer_name': "$name",
+      'address': {
+        'type': 'Point',
+        'coordinates': [
+          longitude ?? 0, // Ensure to handle null values appropriately
+          latitude ?? 0,
+        ],
+        'Sublocality': sublocality ?? '', // Sublocality obtained from reverse geocoding
+      },
+      'farmer_contact': "$contact",
+    };
+
+
+    // Send the POST request
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(latitude!, longitude!);
-      if (placemarks.isNotEmpty) {
-        sublocality = placemarks[0].subLocality ?? placemarks[0].locality;
+      final response = await http.post(
+        Uri.parse('http://localhost:4000/api/v1/auth/farmerInfo'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      );
+      print('token=${widget.token}');
+      print(jsonEncode(requestBody));
+
+      if (response.statusCode == 200) {
+        // If the server returns a 200 OK response, parse the JSON
+        Map<String, dynamic> data = jsonDecode(response.body);
+        if (data['success']) {
+          // Successfully saved farmer information
+          print(data['message']);
+          // Navigate to FarmerHomePage
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => FarmerHomePage()),
+          );
+        } else {
+          // Handle server response indicating failure
+          print(data['message']);
+        }
+      } else {
+        // Handle server errors
+        print(
+            'Failed to save farmer information. Server returned status code ${response
+                .statusCode}');
       }
     } catch (e) {
-      print('Error getting address: $e');
+      // Handle network errors
+      print('Error occurred while communicating with the server: $e');
     }
-
-    // Save details to database or perform any other action
-    print('Name: $name');
-    print('Contact: $contact');
-    print('Latitude: $latitude');
-    print('Longitude: $longitude');
-    print('Sublocality: $sublocality');
-
-    // Navigate to FarmerHomePage
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => FarmerHomePage()),
-    );
   }
 
   void _showValidationDialog(String message) {
@@ -190,37 +244,38 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
                 onTap: () {
                   _showMapPicker(context);
                 },
-                child: AbsorbPointer(
-                  child: TextField(
-                    style: TextStyle(fontSize: 15, color: Colors.black),
-                    maxLines: 5,
-                    minLines: 2,
-                    enabled: false,
-                    cursorColor: Color.fromARGB(255, 252, 139, 26),
-                    decoration: InputDecoration(
-                      suffixIcon: Icon(
-                        Icons.add_location_alt_outlined,
-                        color: Color.fromARGB(255, 252, 139, 26),
+                child: Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey[200],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Location:',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            sublocality != null
+                                ? sublocality!
+                                : 'Select a location',
+                            style: TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                        ],
                       ),
-                      alignLabelWithHint: true,
-                      labelText: 'Location ',
-                      labelStyle: TextStyle(
-                        color: Color.fromARGB(255, 104, 104, 104),
-                        fontSize: 16,
+                      Icon(
+                        Icons.location_on,
+                        color: Colors.orange,
+                        size: 30,
                       ),
-                      disabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          width: 2,
-                          color: Color.fromARGB(255, 252, 139, 26),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          width: 2,
-                          color: Color.fromARGB(255, 252, 139, 26),
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -249,4 +304,3 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
     );
   }
 }
-
