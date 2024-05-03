@@ -27,7 +27,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> _signUp() async {
     if (_signUpFormKey.currentState!.validate()) {
       // Form validation succeeded, send signup request to backend
-      final url = Uri.parse('http://localhost:4000/api/v1/auth/signup');
+      final url = Uri.parse('http://192.168.76.126:4000/api/v1/auth/signup');
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
@@ -95,11 +95,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    var width = MediaQuery
-        .of(context)
-        .size
-        .width;
-
     return Scaffold(
       body: Form(
         key: _signUpFormKey,
@@ -108,65 +103,17 @@ class _SignUpPageState extends State<SignUpPage> {
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Flexible(
-                  flex: 2,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Colors.redAccent,
-                          kLogTColour,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.only(
-                        bottomRight: Radius.circular(width / 3),
-                        bottomLeft: Radius.circular(width / 3),
-                      ),
-                    ),
-                    child: Center(
-                      child: Container(
-                        height: 100,
-                        width: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: const Icon(
-                          Icons.android,
-                          color: kLogTColour,
-                          size: 80,
-                        ),
-                      ),
-                    ),
+                Text(
+                  "HELLO, WELCOME ",
+                  style: TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                const Align(
-                  alignment: Alignment(-1, -1),
-                  child: Flexible(
-                    flex: 1,
-                    child: Text(
-                      "Sign Up",
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: kLogTColour,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                  child: Divider(
-                    thickness: 2,
-                    color: Colors.redAccent,
-                  ),
-                ),
+                SizedBox(height: 20),
                 Flexible(
                   flex: 3,
                   child: SingleChildScrollView(
@@ -176,8 +123,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           padding: const EdgeInsets.all(8.0),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: kLogTextfiled,
-                              border: Border.all(color: Colors.white54),
+                              color: Colors.grey[300],
+                              border: Border.all(color: Colors.black),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: TextFormField(
@@ -188,16 +135,17 @@ class _SignUpPageState extends State<SignUpPage> {
                                 return null;
                               },
                               controller: emailController,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
+                                color: Colors.black,
                               ),
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 labelText: "Email",
-                                labelStyle: const TextStyle(
-                                  color: Colors.redAccent,
+                                labelStyle: TextStyle(
+                                  color: Colors.black45,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                 ),
@@ -209,8 +157,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           padding: const EdgeInsets.all(8.0),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: kLogTextfiled,
-                              border: Border.all(color: Colors.white54),
+                              color: Colors.grey[300],
+                              border: Border.all(color: Colors.black45),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: TextFormField(
@@ -222,13 +170,14 @@ class _SignUpPageState extends State<SignUpPage> {
                               },
                               controller: passwordController,
                               obscureText: true,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
+                                color: Colors.black45,
                               ),
                               decoration: InputDecoration(
                                 labelText: 'Password',
-                                labelStyle: const TextStyle(
-                                  color: Colors.redAccent,
+                                labelStyle: TextStyle(
+                                  color: Colors.black45,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                 ),
@@ -243,8 +192,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           padding: const EdgeInsets.all(8.0),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: kLogTextfiled,
-                              border: Border.all(color: Colors.white54),
+                              color: Colors.grey[300],
+                              border: Border.all(color: Colors.black45),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: TextFormField(
@@ -256,13 +205,14 @@ class _SignUpPageState extends State<SignUpPage> {
                               },
                               controller: confirmPasswordController,
                               obscureText: true,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
+                                color: Colors.black45,
                               ),
                               decoration: InputDecoration(
                                 labelText: 'Confirm Password',
-                                labelStyle: const TextStyle(
-                                  color: Colors.redAccent,
+                                labelStyle: TextStyle(
+                                  color: Colors.black45,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                 ),
@@ -273,13 +223,12 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                           ),
                         ),
-                        // OTP Field
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: kLogTextfiled,
-                              border: Border.all(color: Colors.white54),
+                              color: Colors.grey[300], // Changed color to grey
+                              border: Border.all(color: Colors.black45), // Changed border color to black
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: TextFormField(
@@ -292,13 +241,14 @@ class _SignUpPageState extends State<SignUpPage> {
                               onChanged: (val) {
                                 otp = val; // Update the OTP value
                               },
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
+                                color: Colors.black45, // Changed color to black
                               ),
                               decoration: InputDecoration(
                                 labelText: 'OTP',
-                                labelStyle: const TextStyle(
-                                  color: Colors.redAccent,
+                                labelStyle: TextStyle(
+                                  color: Colors.black45, // Changed color to blue
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                 ),
@@ -309,13 +259,12 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                           ),
                         ),
-                        // Account Type Dropdown
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: kLogTextfiled,
-                              border: Border.all(color: Colors.white54),
+                              color: Colors.grey[300], // Changed color to grey
+                              border: Border.all(color: Colors.black45), // Changed border color to black
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: DropdownButtonFormField<String>(
@@ -327,8 +276,8 @@ class _SignUpPageState extends State<SignUpPage> {
                               },
                               decoration: InputDecoration(
                                 labelText: 'Account Type',
-                                labelStyle: const TextStyle(
-                                  color: Colors.redAccent,
+                                labelStyle: TextStyle(
+                                  color: Colors.black45, // Changed color to blue
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                 ),
@@ -355,21 +304,12 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                           ),
                         ),
-
-                        // Certificate upload button
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ElevatedButton(
-                            onPressed: _pickCertificate,
-                            child: Text('Upload Certificate'),
-                          ),
-                        ),
                         SizedBox(
                           height: 20,
                         ),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: kLogTColour,
+                            backgroundColor: Colors.black45, // Changed color to green
                             padding: EdgeInsets.symmetric(
                               vertical: 16,
                               horizontal: 50,
@@ -384,7 +324,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Colors.white, // Changed color to white
                             ),
                           ),
                         ),
@@ -399,6 +339,8 @@ class _SignUpPageState extends State<SignUpPage> {
       ),
     );
   }
+
+
 
   void navigateToAccountDetailsPage(String token) {
     if (selectedAccountType == 'Farmer') {

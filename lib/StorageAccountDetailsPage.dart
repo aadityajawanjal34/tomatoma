@@ -45,7 +45,8 @@ class _StorageAccountDetailsPageState
     var status = await Permission.location.request();
     if (status.isGranted) {
       _getCurrentLocation();
-    } else if (status.isDenied || status.isRestricted || status.isPermanentlyDenied) {
+    } else
+    if (status.isDenied || status.isRestricted || status.isPermanentlyDenied) {
       // Handle denied permissions
       _showPermissionDeniedDialog();
     }
@@ -84,34 +85,35 @@ class _StorageAccountDetailsPageState
   void _showMapPicker(BuildContext context) async {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        height: 300,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(
-            target: LatLng(latitude ?? 0, longitude ?? 0),
-            zoom: 14,
-          ),
-          onMapCreated: (controller) {
-            setState(() {
-              mapController = controller;
-            });
-          },
-          markers: Set.from([
-            if (latitude != null && longitude != null)
-              Marker(
-                markerId: MarkerId("currentLocation"),
-                position: LatLng(latitude!, longitude!),
+      builder: (context) =>
+          Container(
+            height: 300,
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: LatLng(latitude ?? 0, longitude ?? 0),
+                zoom: 14,
               ),
-          ]),
-          onTap: (latLng) {
-            setState(() {
-              latitude = latLng.latitude;
-              longitude = latLng.longitude;
-              mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
-            });
-          },
-        ),
-      ),
+              onMapCreated: (controller) {
+                setState(() {
+                  mapController = controller;
+                });
+              },
+              markers: Set.from([
+                if (latitude != null && longitude != null)
+                  Marker(
+                    markerId: MarkerId("currentLocation"),
+                    position: LatLng(latitude!, longitude!),
+                  ),
+              ]),
+              onTap: (latLng) {
+                setState(() {
+                  latitude = latLng.latitude;
+                  longitude = latLng.longitude;
+                  mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
+                });
+              },
+            ),
+          ),
     ).then((value) async {
       // After the modal bottom sheet is closed, fetch the address details and update the UI
       try {
@@ -131,7 +133,8 @@ class _StorageAccountDetailsPageState
       } catch (e) {
         print('Error getting address: $e');
         setState(() {
-          sublocality = "Unknown"; // Handle errors by setting sublocality to "Unknown"
+          sublocality =
+          "Unknown"; // Handle errors by setting sublocality to "Unknown"
         });
       }
     });
@@ -142,11 +145,12 @@ class _StorageAccountDetailsPageState
     String storageName = storageNameController.text;
     String address = addressController.text;
     String storageContact = storageContactController.text;
-    String capacity=capacityController.text;
+    String capacity = capacityController.text;
     String rate = rateController.text;
 
     // Validate input fields
-    if (storageOwner.isEmpty || storageName.isEmpty || capacity.isEmpty || rate.isEmpty ) {
+    if (storageOwner.isEmpty || storageName.isEmpty || capacity.isEmpty ||
+        rate.isEmpty) {
       _showValidationDialog('Please fill in all the details.');
       return;
     }
@@ -154,25 +158,26 @@ class _StorageAccountDetailsPageState
     // Prepare the request body
     Map<String, dynamic> requestBody = {
       'token': widget.token,
-      'storage_name':"$storageName",
-      'owner_name':"$storageOwner",
+      'storage_name': "$storageName",
+      'owner_name': "$storageOwner",
       'address': {
         'type': 'Point',
         'coordinates': [
           longitude ?? 0, // Ensure to handle null values appropriately
           latitude ?? 0,
         ],
-        'Sublocality': sublocality ?? '', // Sublocality obtained from reverse geocoding
+        'Sublocality': sublocality ?? '',
+        // Sublocality obtained from reverse geocoding
       },
       'storage_contact': "$storageContact",
-      'capacity':"$capacity",
-      'rate':"$rate",
+      'capacity': "$capacity",
+      'rate': "$rate",
     };
 
     // Send the POST request
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/api/v1/auth/StorageInfo'),
+        Uri.parse('http://192.168.76.126:4000/api/v1/auth/StorageInfo'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
@@ -188,7 +193,8 @@ class _StorageAccountDetailsPageState
           // Navigate to FarmerHomePage
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => StorageHomePage()),
+            MaterialPageRoute(builder: (context) =>
+                StorageHomePage(userId: data['storage']['user'])),
           );
         } else {
           // Handle server response indicating failure
@@ -197,7 +203,8 @@ class _StorageAccountDetailsPageState
       } else {
         // Handle server errors
         print(
-            'Failed to save farmer information. Server returned status code ${response.statusCode}');
+            'Failed to save storage information. Server returned status code ${response
+                .statusCode}');
       }
     } catch (e) {
       // Handle network errors
@@ -230,7 +237,9 @@ class _StorageAccountDetailsPageState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Storage Account Details'),
+        title: Text('Storage Account Details',
+            style: TextStyle(color: Colors.white)), // Set app bar text color
+        backgroundColor: Colors.black87, // Change app bar backgr
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -337,7 +346,11 @@ class _StorageAccountDetailsPageState
                 onPressed: () {
                   _saveDetails();
                 },
-                child: Text('Save'),
+                child: Text('Save', style: TextStyle(color: Colors.white)),
+                // Set button text color
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black45, // Set button color to black45
+                ),
               ),
             ],
           ),
@@ -345,5 +358,4 @@ class _StorageAccountDetailsPageState
       ),
     );
   }
-
 }

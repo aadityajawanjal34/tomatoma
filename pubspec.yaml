@@ -43,6 +43,13 @@ dependencies:
   permission_handler: ^11.3.0
   http: ^1.2.1
   file_picker: ^8.0.0+1
+  image_picker: ^1.0.7
+  tflite_flutter: ^0.10.4
+  image: ^4.1.7
+  path_provider: ^2.1.3
+  flutter_dotenv: ^5.1.0
+  excel: ^4.0.3
+
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +67,16 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - lib/assets/tflite_model.tflite
+    - lib/assets/labels.txt
+    - lib/assets/diseases.jpeg
+    - lib/assets/farmer.png
+    - lib/assets/newstoma.png
+    - lib/assets/nursery.jpeg
+    - lib/assets/signin.png
+    - lib/assets/tomato.png
+    - lib/assets/Storage_Facility_In_Mumbai.jpg
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

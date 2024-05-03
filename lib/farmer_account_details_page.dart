@@ -78,34 +78,35 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
   void _showMapPicker(BuildContext context) async {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        height: 300,
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(
-            target: LatLng(latitude ?? 0, longitude ?? 0),
-            zoom: 14,
-          ),
-          onMapCreated: (controller) {
-            setState(() {
-              mapController = controller;
-            });
-          },
-          markers: Set.from([
-            if (latitude != null && longitude != null)
-              Marker(
-                markerId: MarkerId("currentLocation"),
-                position: LatLng(latitude!, longitude!),
+      builder: (context) =>
+          Container(
+            height: 300,
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: LatLng(latitude ?? 0, longitude ?? 0),
+                zoom: 14,
               ),
-          ]),
-          onTap: (latLng) {
-            setState(() {
-              latitude = latLng.latitude;
-              longitude = latLng.longitude;
-              mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
-            });
-          },
-        ),
-      ),
+              onMapCreated: (controller) {
+                setState(() {
+                  mapController = controller;
+                });
+              },
+              markers: Set.from([
+                if (latitude != null && longitude != null)
+                  Marker(
+                    markerId: MarkerId("currentLocation"),
+                    position: LatLng(latitude!, longitude!),
+                  ),
+              ]),
+              onTap: (latLng) {
+                setState(() {
+                  latitude = latLng.latitude;
+                  longitude = latLng.longitude;
+                  mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
+                });
+              },
+            ),
+          ),
     ).then((value) async {
       // After the modal bottom sheet is closed, fetch the address details and update the UI
       try {
@@ -125,12 +126,12 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
       } catch (e) {
         print('Error getting address: $e');
         setState(() {
-          sublocality = "Unknown"; // Handle errors by setting sublocality to "Unknown"
+          sublocality =
+          "Unknown"; // Handle errors by setting sublocality to "Unknown"
         });
       }
     });
   }
-
 
 
   void _saveDetails() async {
@@ -154,7 +155,8 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
           longitude ?? 0, // Ensure to handle null values appropriately
           latitude ?? 0,
         ],
-        'Sublocality': sublocality ?? '', // Sublocality obtained from reverse geocoding
+        'Sublocality': sublocality ?? '',
+        // Sublocality obtained from reverse geocoding
       },
       'farmer_contact': "$contact",
     };
@@ -163,7 +165,7 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
     // Send the POST request
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/api/v1/auth/farmerInfo'),
+        Uri.parse('http://192.168.76.126:4000/api/v1/auth/farmerInfo'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
@@ -179,7 +181,8 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
           // Navigate to FarmerHomePage
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => FarmerHomePage()),
+            MaterialPageRoute(builder: (context) =>
+                FarmerHomePage(userId: '66220b91c7921138f5d85245')),
           );
         } else {
           // Handle server response indicating failure
@@ -221,7 +224,8 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Farmer Account Details'),
+        title: Text('Farmer Account Details', style: TextStyle(color: Colors.white)), // Set app bar text color
+        backgroundColor: Colors.black87, // Change app bar background color
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -231,12 +235,24 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
             children: [
               Text(
                 'Farmer Name:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87), // Change text color
               ),
               TextFormField(
                 controller: nameController,
                 decoration: InputDecoration(
                   hintText: 'Enter your name',
+                  hintStyle: TextStyle(color: Colors.grey),
+                  // Change hint text color
+                  focusedBorder: OutlineInputBorder( // Change border color when focused
+                    borderSide: BorderSide(color: Colors.green),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  enabledBorder: OutlineInputBorder( // Change border color when enabled
+                    borderSide: BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
               SizedBox(height: 20),
@@ -248,7 +264,7 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
                   padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: Colors.grey[200],
+                    color: Colors.blueGrey[100], // Change container color
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -258,15 +274,17 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
                         children: [
                           Text(
                             'Location:',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87), // Change text color
                           ),
                           SizedBox(height: 5),
                           Text(
                             sublocality != null
                                 ? sublocality!
                                 : 'Select a location',
-                            style: TextStyle(fontSize: 16, color: Colors.black),
+                            style: TextStyle(fontSize: 16,
+                                color: Colors.black54), // Change text color
                           ),
                         ],
                       ),
@@ -282,12 +300,24 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
               SizedBox(height: 20),
               Text(
                 'Contact:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87), // Change text color
               ),
               TextFormField(
                 controller: contactController,
                 decoration: InputDecoration(
                   hintText: 'Enter your contact number',
+                  hintStyle: TextStyle(color: Colors.grey),
+                  // Change hint text color
+                  focusedBorder: OutlineInputBorder( // Change border color when focused
+                    borderSide: BorderSide(color: Colors.green),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  enabledBorder: OutlineInputBorder( // Change border color when enabled
+                    borderSide: BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
               SizedBox(height: 20),
@@ -296,6 +326,12 @@ class _FarmerAccountDetailsPageState extends State<FarmerAccountDetailsPage> {
                   _saveDetails();
                 },
                 child: Text('Save'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.black45, // Change text color
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
               ),
             ],
           ),

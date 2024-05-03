@@ -28,7 +28,7 @@ class _EmailInputPageState extends State<EmailInputPage> {
     final String email = _emailController.text.trim();
     print('Email captured: $email'); // Print the captured email
 
-    final Uri uri = Uri.parse('http://localhost:4000/api/v1/auth/sendotp');
+    final Uri uri = Uri.parse('http://192.168.76.126:4000/api/v1/auth/sendotp');
 
     // Print the request body
     print('Request body: {"email": "$email"}');
@@ -36,7 +36,8 @@ class _EmailInputPageState extends State<EmailInputPage> {
     try {
       final response = await http.post(
         uri,
-        headers: {"Content-Type": "application/json"}, // Set the content type explicitly
+        headers: {"Content-Type": "application/json"},
+        // Set the content type explicitly
         body: jsonEncode({"email": "$email"}), // Encode the body as JSON
       );
       print(response.body);
@@ -54,16 +55,17 @@ class _EmailInputPageState extends State<EmailInputPage> {
         // Handle error, maybe show an error message
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to send OTP. Please try again later.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('OK'),
+          builder: (context) =>
+              AlertDialog(
+                title: Text('Error'),
+                content: Text('Failed to send OTP. Please try again later.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('OK'),
+                  ),
+                ],
               ),
-            ],
-          ),
         );
       }
     } catch (e) {
@@ -71,16 +73,18 @@ class _EmailInputPageState extends State<EmailInputPage> {
       // Handle error, maybe show an error message
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('An unexpected error occurred. Please try again later.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
+        builder: (context) =>
+            AlertDialog(
+              title: Text('Error'),
+              content: Text(
+                  'An unexpected error occurred. Please try again later.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('OK'),
+                ),
+              ],
             ),
-          ],
-        ),
       );
     }
   }
@@ -99,14 +103,26 @@ class _EmailInputPageState extends State<EmailInputPage> {
           children: [
             TextField(
               controller: _emailController,
+              style: TextStyle(color: Colors.black45), // Set text color
               decoration: InputDecoration(
                 labelText: 'Email',
+                labelStyle: TextStyle(color: Colors.black87), // Set label color
+                border: OutlineInputBorder( // Add border
+                  borderSide: BorderSide(
+                      color: Colors.black45), // Set border color
+                ),
               ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _sendOTP,
               child: Text('Send OTP'),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Colors.black45), // Set background color
+                foregroundColor: MaterialStateProperty.all<Color>(
+                    Colors.white), // Set text color
+              ),
             ),
           ],
         ),
@@ -114,7 +130,6 @@ class _EmailInputPageState extends State<EmailInputPage> {
     );
   }
 }
-
 void main() {
   runApp(MaterialApp(
     home: EmailInputPage(),
